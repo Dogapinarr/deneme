@@ -1,0 +1,363 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Mobile Provider App APIs",
+    "description": "APIs for querying mobile provider bills.",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints for user authentication."
+    },
+    {
+      "name": "Query Bill",
+      "description": "Endpoints for querying bills."
+    },
+    {
+      "name": "Banking App",
+      "description": "Endpoints for banking app."
+    },
+    {
+      "name": "Website",
+      "description": "Endpoints for website."
+    },
+    {
+      "name": "Admin",
+      "description": "Endpoints for admin tasks."
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer token required. Expected format: 'Bearer <JWT>'"
+    }
+  },
+  "paths": {
+    "/v1/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Authenticate user",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "subscriber_no": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": ["subscriber_no", "password"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful authentication",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access_token": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/query-bill": {
+      "get": {
+        "tags": ["Query Bill"],
+        "summary": "Query Bill",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "subscriber_no",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "bill_total": {
+                  "type": "integer"
+                },
+                "paid_status": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid subscriber_no parameter or Month parameter is missing"
+          },
+          "401": {
+            "description": "Unauthorized. Bearer token required."
+          },
+          "404": {
+            "description": "Bill not found"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/query-bill-detailed": {
+      "get": {
+        "tags": ["Query Bill"],
+        "summary": "Query Bill Detailed",
+        "parameters": [
+          {
+            "name": "subscriber_no",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detailed_bill": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "total": {
+                        "type": "integer"
+                      },
+                      "details": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid subscriber_no parameter or Month parameter is missing"
+          },
+          "401": {
+            "description": "Unauthorized. Bearer token required in the format 'Bearer <JWT>'."
+          },
+          "404": {
+            "description": "No detailed bill found"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/banking-app/query-bill": {
+      "get": {
+        "tags": ["Banking App"],
+        "summary": "Query unpaid bills for a subscriber",
+        "parameters": [
+          {
+            "name": "subscriber_no",
+            "in": "query",
+            "description": "Subscriber number",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of unpaid bills",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "unpaid_bills": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid subscriber_no parameter"
+          },
+          "401": {
+            "description": "Unauthorized. Bearer token required in the format 'Bearer <JWT>'."
+          },
+          "404": {
+            "description": "No unpaid bills found for the subscriber"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/website/pay-bill": {
+      "post": {
+        "tags": ["Website"],
+        "summary": "Pay Bill",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "subscriber_no": {
+                  "type": "string"
+                },
+                "month": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful payment",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "payment_status": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invoice not paid",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "payment_status": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bill not found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/website/admin/add-bill": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Add Bill",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "subscriber_no": {
+                  "type": "string"
+                },
+                "month": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer"
+                },
+                "details": {
+                  "type": "string"
+                },
+                "paid_status": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful bill addition",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "transaction_status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bill already exists for the subscriber and month"
+          }
+        }, 
+         "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  }
+}
